@@ -1,0 +1,100 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+model User {
+  id        String @id @default(uuid())
+  name      String
+  email     String @unique
+  password  String
+  avater    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  socialAccount SocialAccounts[]
+  posts         Post[]
+}
+
+model SocialAccounts {
+  id              String @id @default(uuid())
+  platform        Platform
+
+  platformUserId  String?
+  username        String? 
+
+  accessToken     String @db.Text
+  refreshToken    String? @db.Text
+
+  tokenExpiresAt  DateTime?
+
+  isActive        Boolean @default(true)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  userId          String
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+}
+
+model Post {
+  id          String @id @default(uuid())
+
+  caption     String? @db.Text
+  status      PostStatus
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userId      String
+  user    User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  mediaFile   MediaFile[]
+}
+
+model MediaFile {
+  id          String @id @default(uuid())
+
+  mediaType   MediaType
+
+  fileUrl     String? @db.Text
+  publicUrl   String?
+
+  createdAt   DateTime @default(now())
+
+  postId      String
+  post     Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+}
+
+
+enum Platform {
+  Facebook
+  Instagram
+  Twitter
+  LinkedIn
+}
+
+enum MediaType {
+  Video
+  Image
+}
+
+enum PostStatus {
+  Publishing
+  Published
+  Failed
+  Scheduled
+}
+
+enum PlatformPostStatus {
+  Pending
+  Success
+  Failed
+}
